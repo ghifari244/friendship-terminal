@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07110b">
+  <title>FRIENDSHIP.EXE | Digital Memory Terminal</title>
+  <style>
+    :root {
+      --bg: #050b07;
+      --panel: #0b1710;
+      --green: #65f59a;
+      --muted: #9bb9a4;
+      --line: rgba(101,245,154,.24);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 22px 14px;
+      background: radial-gradient(ellipse at top, #10251a 0%, var(--bg) 58%);
+      color: #eaffef; font-family: Consolas, "Courier New", monospace;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .shell { width: 100%; max-width: 620px; }
+    .topline {
+      display: flex; justify-content: space-between; gap: 10px;
+      color: var(--green); font-size: 11px; letter-spacing: 1.4px;
+      margin: 0 2px 12px;
+    }
+    .terminal {
+      border: 1px solid var(--line); border-radius: 15px; overflow: hidden;
+      background: rgba(7,17,11,.94);
+      box-shadow: 0 0 35px rgba(40,255,120,.08), 0 18px 60px #0008;
+    }
+    .bar {
+      display: flex; align-items: center; gap: 7px; padding: 13px 15px;
+      background: #102017; border-bottom: 1px solid var(--line);
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #3c8055; }
+    .bar span { margin-left: auto; color: #9bb9a4; font-size: 11px; }
+    .content { padding: 22px 19px 24px; }
+    .green { color: var(--green); }
+    .muted { color: var(--muted); }
+    .tiny { font-size: 11px; line-height: 1.7; }
+    h1 {
+      margin: 8px 0 4px; font-size: clamp(27px, 8vw, 42px);
+      letter-spacing: 2px; color: #eaffef;
+      text-shadow: 0 0 18px rgba(101,245,154,.25);
+    }
+    .subtitle { color: var(--green); font-size: 11px; letter-spacing: 2px; }
+    .rule { height: 1px; background: var(--line); margin: 19px 0; }
+    .log { min-height: 112px; font-size: 12px; line-height: 1.9; color: var(--green); }
+    .input-area { margin-top: 17px; }
+    label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+    input {
+      width: 100%; padding: 14px 13px; border-radius: 8px;
+      border: 1px solid var(--line); outline: none;
+      background: #07110b; color: #eaffef; font: inherit; font-size: 14px;
+    }
+    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px #65f59a18; }
+    button {
+      width: 100%; margin-top: 11px; padding: 14px;
+      border: 1px solid var(--green); border-radius: 8px;
+      background: var(--green); color: #041008;
+      font: bold 12px Consolas, monospace; letter-spacing: 1px;
+      cursor: pointer;
+    }
+    button:active { transform: scale(.99); }
+    .profile {
+      display: none; margin-top: 19px; padding: 17px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: linear-gradient(145deg, #102219, #09130d);
+    }
+    .profile.show { display: block; animation: appear .6s ease both; }
+    .eyebrow { font-size: 10px; letter-spacing: 1.5px; color: var(--green); }
+    .name { font-size: clamp(24px, 7vw, 34px); margin: 9px 0 4px; overflow-wrap: anywhere; }
+    .uid { color: var(--muted); font-size: 11px; }
+    .message {
+      margin-top: 19px; color: #d9f6e1; font-size: 13px; line-height: 1.9;
+      white-space: pre-line;
+    }
+    .error {
+      display: none; margin-top: 10px; color: #ff8f8f;
+      font-size: 11px; line-height: 1.7;
+    }
+    .error.show { display: block; animation: appear .3s ease both; }
+    .translation {
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px dashed rgba(101,245,154,.12);
+      color: #5f7d69; font-size: 11.5px; line-height: 1.8;
+      white-space: pre-line; opacity: 0;
+    }
+    .translation.show { animation: appear .8s ease both; opacity: 1; }
+    .signature { color: var(--green); margin-top: 17px; font-size: 12px; }
+    .footer { text-align: center; margin-top: 15px; color: #6f927a; font-size: 10px; line-height: 1.8; }
+    .cursor { display: inline-block; width: 7px; height: 13px; background: var(--green); vertical-align: -2px; animation: blink 1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topline">
+      <span>● SYSTEM ONLINE</span>
+      <span>BUILD 2026.11</span>
+    </div>
+    <section class="terminal">
+      <div class="bar">
+        <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <span>friendship_terminal.exe</span>
+      </div>
+      <div class="content">
+        <div class="tiny green">BOOT SEQUENCE // PERSONAL MEMORY SYSTEM</div>
+        <h1>FRIENDSHIP<span class="green">.EXE</span></h1>
+        <div class="subtitle">A LITTLE DIGITAL GIFT</div>
+        <div class="rule"></div>
+
+        <div class="log" id="bootLog" aria-live="polite"></div>
+
+        <div class="input-area" id="inputArea">
+          <label for="friendName">ENTER YOUR NAME TO ACCESS YOUR PROFILE:</label>
+          <input id="friendName" maxlength="28" placeholder="Type your name here..." autocomplete="off">
+          <button id="launchBtn">INITIALIZE MY PROFILE &gt;</button>
+          <div class="error" id="error" role="alert"></div>
+          <div class="tiny muted" style="margin-top:9px">No account needed. Just a small memory from a friend.</div>
+        </div>
+
+        <div class="profile" id="profile">
+          <div class="eyebrow">USER PROFILE // ACCESS GRANTED ✓</div>
+          <div class="name" id="displayName"></div>
+          <div class="uid" id="displayId"></div>
+          <div class="rule"></div>
+          <div class="message" id="message"></div>
+          <div class="translation" id="translation"></div>
+          <div class="signature">> CONNECTION: FOREVER <span class="cursor"></span></div>
+        </div>
+      </div>
+    </section>
+    <div class="footer">
+      END OF SESSION, NOT THE FRIENDSHIP.<br>
+      MADE WITH &lt;HTML&gt; + {CSS} + JAVASCRIPT
+    </div>
+  </main>
+
+  <script>
+    const bootLines = [
+      "> Starting friendship.exe...",
+      "> Loading precious memories...",
+      "> Checking connection...",
+      "> Connection established ✓",
+      "> Welcome. Please identify yourself."
+    ];
+
+    const bootLog = document.getElementById("bootLog");
+    const input = document.getElementById("friendName");
+    const button = document.getElementById("launchBtn");
+    const profile = document.getElementById("profile");
+
+    let lineIndex = 0;
+    function showBootLine() {
+      if (lineIndex < bootLines.length) {
+        bootLog.innerHTML += bootLines[lineIndex] + "<br>";
+        lineIndex++;
+        setTimeout(showBootLine, 520);
+      }
+    }
+    setTimeout(showBootLine, 350);
+
+    // Creates a repeatable ID from the entered name.
+    // The same name will produce the same ID on every visit.
+    function makeUserId(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = ((hash << 5) - hash) + name.charCodeAt(i);
+        hash |= 0;
+      }
+      const code = String(Math.abs(hash) % 10000).padStart(4, "0");
+      return "FRIEND_" + code;
+    }
+
+    let typingRun = 0;
+    function typeMessage(text, element, speed = 24, onDone) {
+      const run = ++typingRun; // cancels any earlier typing still in progress
+      element.textContent = "";
+      let i = 0;
+      function tick() {
+        if (run !== typingRun) return;
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(tick, speed);
+        } else if (onDone) {
+          onDone();
+        }
+      }
+      tick();
+    }
+
+    // ===== DAFTAR TEMAN (15 orang) =====
+    // Ganti dengan nama asli. Tulisan inilah yang tampil di profil.
+    // Cocokkan tidak peduli huruf besar/kecil atau spasi berlebih.
+    // Opsional: tambah panggilan lain di "alias" supaya tetap diterima.
+    // Satu baris = satu orang. Kalau punya 2 nama, dua-duanya diterima
+    // dan profil menampilkan nama yang diketik.
+    const friends = [
+      ["Adinda"],
+      ["Angel"],
+      ["Bella"],
+      ["Farhan"],
+      ["Hasan", "Hassan"],
+      ["Putri"],
+      ["Muafah"],
+      ["Arif", "Amin"],
+      ["Rizky"],
+      ["Tinton"],
+      ["Weli", "Nirwan"],
+      ["Irma"],
+      ["Sinta"],
+      ["Wanti"],
+      ["Eka"]
+    ];
+
+    function normalize(s) {
+      return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function findFriend(typed) {
+      const key = normalize(typed);
+      for (const names of friends) {
+        const hit = names.find(n => normalize(n) === key);
+        if (hit) return hit; // returns the properly written name
+      }
+      return null;
+    }
+
+    const errorEl = document.getElementById("error");
+
+    button.addEventListener("click", () => {
+      const typed = input.value.trim();
+      if (!typed) {
+        input.focus();
+        input.placeholder = "Please enter your name first...";
+        return;
+      }
+
+      const match = findFriend(typed);
+      if (!match) {
+        errorEl.textContent = "> ACCESS DENIED: nama tidak ditemukan. Ketik namamu persis seperti yang dikenal sistem.";
+        errorEl.classList.add("show");
+        profile.classList.remove("show");
+        typingRun++; // stop any typing in progress
+        input.focus();
+        input.select();
+        return;
+      }
+
+      errorEl.classList.remove("show");
+      const name = match;
+
+      document.getElementById("translation").classList.remove("show");
+      profile.classList.remove("show");
+      void profile.offsetWidth; // restart the appear animation
+      document.getElementById("displayName").textContent = name.toUpperCase();
+      document.getElementById("displayId").textContent = "USER ID: " + makeUserId(name);
+      profile.classList.add("show");
+
+      const message =
+        "Hey, " + name + "!\n\n" +
+        "Thank you for being part of this journey. " +
+        "Maybe one day our paths will take us in different directions, " +
+        "but the memories we made will always be part of the story.\n\n" +
+        "This is not goodbye. It's just the end of one chapter. " +
+        "Keep growing, keep chasing your dreams, and never forget the people who shared this chapter with you.\n\n" +
+        "See you in the next version of life. :)";
+
+      const translation =
+        "Hei, " + name + "!\n\n" +
+        "Terima kasih sudah menjadi bagian dari perjalanan ini. " +
+        "Mungkin suatu hari jalan kita akan menuju arah yang berbeda, " +
+        "tapi kenangan yang kita buat akan selalu menjadi bagian dari cerita.\n\n" +
+        "Ini bukan perpisahan. Hanya akhir dari satu bab. " +
+        "Terus berkembang, terus kejar mimpimu, dan jangan lupakan orang-orang yang berbagi bab ini denganmu.\n\n" +
+        "Sampai jumpa di versi kehidupan berikutnya. :)";
+
+      const transEl = document.getElementById("translation");
+      transEl.textContent = translation;
+      typeMessage(message, document.getElementById("message"), 24, () => {
+        transEl.classList.add("show");
+      });
+      profile.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      button.textContent = "INITIALIZE ANOTHER PROFILE >";
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") button.click();
+    });
+  </script>
+</body>
+</html>
